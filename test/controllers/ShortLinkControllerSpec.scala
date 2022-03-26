@@ -7,7 +7,9 @@ import play.api.test.Helpers._
 import play.api.libs.ws._
 import play.api.libs.json.{ JsResult, Json }
 import models.{NewShortLinkEntry, ShortLinkEntry}
+import play.api.mvc.Result
 
+import scala.concurrent.Future
 class ShortLinkControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecting {
 
   implicit val shorLinkJson = Json.format[ShortLinkEntry]
@@ -17,7 +19,7 @@ class ShortLinkControllerSpec extends PlaySpec with GuiceOneAppPerTest with Inje
 
     "return valid http code and content type" in {
       val request = FakeRequest(GET, "/all")
-      val all = route(app, request).get
+      val all:Future[Result] = route(app, request).get
 
       status(all) mustBe OK
       contentType(all) mustBe Some("application/json")
@@ -26,7 +28,7 @@ class ShortLinkControllerSpec extends PlaySpec with GuiceOneAppPerTest with Inje
 
     "return dummy entries in proper json format" in {
       val request = FakeRequest(GET, "/all")
-      val all = route(app, request).get
+      val all:Future[Result] = route(app, request).get
 
       val shortLinkItems: Seq[ShortLinkEntry] = Json.fromJson[Seq[ShortLinkEntry]](contentAsJson(all)).get
       shortLinkItems.filter(_.shortCode == "DummYShort").head mustBe (ShortLinkEntry("DummYShort","https://journiapp.com" ))
@@ -34,7 +36,7 @@ class ShortLinkControllerSpec extends PlaySpec with GuiceOneAppPerTest with Inje
 
     "return url mapping when shortcode is give in decode request" in {
       val request = FakeRequest(GET, "/decode/ShoRTdummY")
-      val decodeResult = route(app, request).get
+      val decodeResult:Future[Result] = route(app, request).get
       val shortLinkItems: ShortLinkEntry = Json.fromJson[ShortLinkEntry](contentAsJson(decodeResult)).get
 
       shortLinkItems.url mustBe "https://bambus.io"
@@ -49,7 +51,7 @@ class ShortLinkControllerSpec extends PlaySpec with GuiceOneAppPerTest with Inje
                   headers = FakeHeaders(List("HOST" ->"localhost", "content-type" ->"text/json")),
                   body =  jsonBody
                 )
-      val encodeResult = route(app, request).get
+      val encodeResult:Future[Result] = route(app, request).get
       val shortLinkItems: ShortLinkEntry = Json.fromJson[ShortLinkEntry](contentAsJson(encodeResult)).get
 
       shortLinkItems.url mustBe "https://google.com"

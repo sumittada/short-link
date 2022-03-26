@@ -24,16 +24,8 @@ class ShortLinkController @Inject()(val controllerComponents: ControllerComponen
     if (shortLinkList.isEmpty) NoContent else Ok(Json.toJson(shortLinkList))
   }
 
-  // /decode/xxxx
-  def getByShortCode(shortCode: String) = Action {
-    val foundItem = shortLinkList.find(_.shortCode == shortCode)
-    foundItem match {
-      case Some(item) => Ok(Json.toJson(item))
-      case None => NotFound
-    }
-  }
-
- def uniqueShortCode(shortLinkList: mutable.ListBuffer[ShortLinkEntry]): String = {
+  // Get 10 letter random alphanumeric code and ensure it doesn't already exist
+  def uniqueShortCode(shortLinkList: mutable.ListBuffer[ShortLinkEntry]): String = {
     val newShortCode = Random.alphanumeric.take(10).mkString("")
     if (shortLinkList.exists(_.shortCode == newShortCode)) uniqueShortCode(shortLinkList)
     else newShortCode
@@ -62,4 +54,14 @@ class ShortLinkController @Inject()(val controllerComponents: ControllerComponen
         BadRequest
     }
   }
+
+  // /decode/xxxx
+  def getByShortCode(shortCode: String) = Action {
+    val foundItem = shortLinkList.find(_.shortCode == shortCode)
+    foundItem match {
+      case Some(item) => Ok(Json.toJson(item))
+      case None => NotFound
+    }
+  }
+
 }
