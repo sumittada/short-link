@@ -6,3 +6,5 @@ GET     /all                       controllers.ShortLinkController.getAll()
 GET     /decode/:shortCode         controllers.ShortLinkController.getByShortCode(shortCode: String)
 + nocsrf
 POST    /encode                    controllers.ShortLinkController.addNewShortLink()
+
+GET     /go/:shortCode             controllers.ShortLinkController.goToURL(shortCode: String)

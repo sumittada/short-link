@@ -4,7 +4,7 @@ import javax.inject._
 import scala.util.Random
 import models.{NewShortLinkEntry, ShortLinkEntry}
 import play.api.libs.json._
-import play.api.mvc.{Action, AnyContent, BaseController, ControllerComponents}
+import play.api.mvc._
 import scala.collection.mutable
 
 @Singleton
@@ -61,6 +61,16 @@ class ShortLinkController @Inject()(val controllerComponents: ControllerComponen
     foundItem match {
       case Some(item) => Ok(Json.toJson(item))
       case None => NotFound
+    }
+  }
+
+  // /go
+  def goToURL(shortCode: String) = Action {
+    val foundItem = shortLinkList.find(_.shortCode == shortCode)
+
+    foundItem match {
+      case Some(item) => Redirect(item.url, 302)
+      case None => NotFound("This Short-Code does't exist on the server.")
     }
   }
 
