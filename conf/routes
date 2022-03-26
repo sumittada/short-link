@@ -2,10 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # https://www.playframework.com/documentation/latest/ScalaRouting
 
-
-
 GET     /all                       controllers.ShortLinkController.getAll()
 GET     /decode/:shortCode         controllers.ShortLinkController.getByShortCode(shortCode: String)
 + nocsrf
 POST    /encode                    controllers.ShortLinkController.addNewShortLink()
-
