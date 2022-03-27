@@ -43,19 +43,37 @@ class ShortLinkControllerSpec extends PlaySpec with GuiceOneAppPerTest with Inje
       shortLinkItems.shortCode.size mustBe 10
     }
 
+    "return 404 when shortcode given in decode request was never saved" in {
+      val requestBadShortCode = FakeRequest(GET, "/decode/badShortCodeNeverSent")
+      val decodeResultBadShortCode:Future[Result] = route(app, requestBadShortCode).get
+      status(decodeResultBadShortCode) mustBe 404
+    }
+
     "create new entry when new url is sent for encoding" in {
-        val jsonBody = Json.obj("url" -> "https://google.com")
-        val request = FakeRequest(
-                  method = "POST",
-                  uri =  "/encode",
-                  headers = FakeHeaders(List("HOST" ->"localhost", "content-type" ->"text/json")),
-                  body =  jsonBody
-                )
+      val jsonBody = Json.obj("url" -> "https://www.journiapp.com/photo-book")
+      val request = FakeRequest(
+                method = "POST",
+                uri =  "/encode",
+                headers = FakeHeaders(List("HOST" ->"localhost", "content-type" ->"text/json")),
+                body =  jsonBody
+              )
       val encodeResult:Future[Result] = route(app, request).get
       val shortLinkItems: ShortLinkEntry = Json.fromJson[ShortLinkEntry](contentAsJson(encodeResult)).get
 
-      shortLinkItems.url mustBe "https://google.com"
+      shortLinkItems.url mustBe "https://www.journiapp.com/photo-book"
       shortLinkItems.shortCode.size mustBe 10
+
+      // Verify that new url is present in the list of all urls
+      val requestAfterAdd = FakeRequest(GET, "/all")
+      val allAfterAdd:Future[Result] = route(app, requestAfterAdd).get
+
+      val shortLinkItemsAfterAdd: Seq[ShortLinkEntry] = Json.fromJson[Seq[ShortLinkEntry]](contentAsJson(allAfterAdd)).get
+      shortLinkItemsAfterAdd.size mustBe 3
+      shortLinkItemsAfterAdd.exists(_.url == "https://www.journiapp.com/photo-book") mustBe true
+
+      // Verify a url never sent is not in the list
+      shortLinkItemsAfterAdd.exists(_.url == "https://example.com/badurlthatisneversent") mustBe false
+
     }
 
   }
